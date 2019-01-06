@@ -1,4 +1,4 @@
-img_rename
+life-short-use-python
 ==========
 
 just a test 
