@@ -6,7 +6,6 @@ Created on 2013年10月21日
 '''
 
 import os
-import sys
 import os.path
 from random import Random
 import Image
