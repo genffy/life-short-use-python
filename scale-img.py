@@ -6,6 +6,7 @@ from PIL import ImageFile
 
 # # 压缩图片文件
 
+
 def compress_image(outfile, mb=190, quality=85, k=0.9):
     """不改变图片尺寸压缩到指定大小
     :param outfile: 压缩文件保存地址
@@ -24,7 +25,7 @@ def compress_image(outfile, mb=190, quality=85, k=0.9):
     while o_size > mb:
         im = Image.open(outfile)
         x, y = im.size
-        out = im.resize((int(x*k), int(y*k)), Image.ANTIALIAS)
+        out = im.resize((int(x * k), int(y * k)), Image.ANTIALIAS)
         try:
             out.save(outfile, quality=quality)
         except Exception as e:
@@ -32,6 +33,7 @@ def compress_image(outfile, mb=190, quality=85, k=0.9):
             break
         o_size = os.path.getsize(outfile) // 1024
     return outfile
+
 
 # # 压缩base64的图片
 def compress_image_bs4(b64, mb=190, k=0.9):
@@ -51,20 +53,21 @@ def compress_image_bs4(b64, mb=190, k=0.9):
         while o_size > mb:
             img = Image.open(im_out)
             x, y = img.size
-            out = img.resize((int(x*k), int(y*k)), Image.ANTIALIAS)
+            out = img.resize((int(x * k), int(y * k)), Image.ANTIALIAS)
             im_out.close()
             im_out = io.BytesIO()
-            out.save(im_out, 'jpeg')
+            out.save(im_out, "jpeg")
             o_size = len(im_out.getvalue()) // 1024
         b64 = base64.b64encode(im_out.getvalue())
         im_out.close()
-        return str(b64, encoding='utf8')
+        return str(b64, encoding="utf8")
+
 
 if __name__ == "__main__":
-    for img in os.listdir('./data/img/'):
+    for img in os.listdir("./data/img/"):
         # print(str(img))
-        compress_image(outfile='./data/img/' + str(img))
-    print('完')
+        compress_image(outfile="./data/img/" + str(img))
+    print("完")
 # from PIL import Image
 
 # # My image is a 200x374 jpeg that is 102kb large

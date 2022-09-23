@@ -1,7 +1,20 @@
 life-short-use-python
 ==========
 
-just a test 
+just a test
 
-## Install
-install package manage tool [installing-pipenv](https://packaging.python.org/en/latest/tutorials/managing-dependencies/#installing-pipenv)
+## DEV
+### install pkg
+```shell
+python -m pip install <pkg-name>
+````
+
+### update requirements
+```shell
+pip freeze > requirements.txt
+```
+
+### pre-commmit check
+```shell
+pre-commit run --all-files
+```
