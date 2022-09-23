@@ -11,7 +11,7 @@ python -m pip install <pkg-name>
 
 ### update requirements
 ```shell
-pip freeze > requirements.txt
+python -m pip freeze > requirements.txt
 ```
 
 ### pre-commmit check
