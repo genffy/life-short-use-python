@@ -10,17 +10,17 @@ def findFile(rootDir):
     list_dirs = os.walk(rootDir)
     for root, dirs, files in list_dirs:
         for d in dirs:
-            print os.path.join(root, d)
+            print(os.path.join(root, d))
         for f in files:
             thisFile = os.path.join(root, f)
             targetFile = os.path.join('E:\musicFile', f)
             copyFile(thisFile, targetFile)
-            print os.path.join(root, f)
+            print(os.path.join(root, f))
 
 
 def copyFile(sourceFile, targetFile):
     open(targetFile, "wb").write(open(sourceFile, "rb").read())
-    print 'copy success'+sourceFile
+    print('copy success'+sourceFile)
 
 
 '''
