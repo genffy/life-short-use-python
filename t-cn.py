@@ -2,7 +2,6 @@
 # python 3.6.5
 from copyreg import constructor
 import requests
-import os
 import pandas as pd
 import re
 import pyperclip
