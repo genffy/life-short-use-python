@@ -6,16 +6,21 @@ __author__ = "genffy"
 import os
 
 
-def findFile(rootDir):
-    list_dirs = os.walk(rootDir)
+def findFile(
+    root_dir, target_dir, ext_arr=[".jpg", ".png", ".jpeg", ".gif", ".mp4", ".mp3"]
+):
+    list_dirs = os.walk(root_dir)
     for root, dirs, files in list_dirs:
-        for d in dirs:
-            print(os.path.join(root, d))
+        # for d in dirs:
+        #     print(os.path.join(root, d))
         for f in files:
-            thisFile = os.path.join(root, f)
-            targetFile = os.path.join("E:\musicFile", f)
-            copyFile(thisFile, targetFile)
-            print(os.path.join(root, f))
+            ext = os.path.splitext(f)[1]  # 获取后缀名
+            if ext in ext_arr:
+                print(ext)
+                thisFile = os.path.join(root, f)
+                targetFile = os.path.join(target_dir, f)
+                copyFile(thisFile, targetFile)
+                print(os.path.join(root, f))
 
 
 def copyFile(sourceFile, targetFile):
@@ -23,13 +28,5 @@ def copyFile(sourceFile, targetFile):
     print("copy success" + sourceFile)
 
 
-"""
-import os
-def findFile(rootDir):
-    for lists in os.listdir(rootDir):
-        path = os.path.join(rootDir, lists)
-        print path
-        if os.path.isdir(path):
-            findFile(path)
-"""
-findFile("E:\Music")
+if __name__ == "__main__":
+    findFile(f"path/to/source", f"path/to/target")
