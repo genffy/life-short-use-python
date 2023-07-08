@@ -3,6 +3,7 @@
 just a test
 
 ## venv
+⚠️ deprecated: move to conda
 ```shell
 python -m venv ./venv
 source ./venv/bin/activate
