@@ -8,6 +8,8 @@ import math
 import textwrap
 
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance, ImageChops, ImageOps
+import cv2 as cv
+import numpy as np
 
 
 def add_mark(imagePath, mark, args):
@@ -216,5 +218,51 @@ def main():
         add_mark(args.file, mark, args)
 
 
+# imgurl path to image file
+def img_marker(
+    imgurl,
+):
+    img = cv.imdecode(np.fromfile(imgurl, dtype=np.uint8), -1)
+    txturls = imgurl.rsplit(".", 1)
+    txturl = rf"{txturls[0]}.txt"
+
+    if img is None:
+        sys.exit("Could not read the image.")
+    else:
+        cv.namedWindow("Display window", cv.WINDOW_NORMAL)
+        cv.resizeWindow("Display window", img.shape[1], img.shape[0])
+        #  annotation file template
+        # label x y w h
+        # 0 0.500781 0.611111 0.023438 0.027778
+        # 0 0.534766 0.599306 0.024219 0.034722
+        # 1 0.376172 0.729861 0.039844 0.079167
+        with open(txturl, "r") as f:
+            lines = f.readlines()
+
+        # read annotation by line
+        for line in lines:
+            parts = line.split()
+            label = int(parts[0])
+            x = float(parts[1])
+            y = float(parts[2])
+            w = float(parts[3])
+            h = float(parts[4])
+
+            # calculate the rectangle box
+            x1 = int((x - w / 2) * img.shape[1])
+            y1 = int((y - h / 2) * img.shape[0])
+            x2 = int((x + w / 2) * img.shape[1])
+            y2 = int((y + h / 2) * img.shape[0])
+
+            # draw the rectangle box
+            cv.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        cv.imshow("Display window", img)
+        k = cv.waitKey(0)
+        if k == ord("q"):  # wait for ESC key to exit
+            cv.destroyAllWindows()
+
+        cv.destroyAllWindows()
+
+
 if __name__ == "__main__":
-    main()
+    img_marker("./data/color_2023-06-07_16_36_10.png")
