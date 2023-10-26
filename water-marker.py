@@ -127,10 +127,17 @@ def gen_mark(args):
     return mark_im
 
 
+# python water-marker.py -f ./data/img
 def main():
     parse = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     parse.add_argument("-f", "--file", type=str, help="image file path or directory")
-    parse.add_argument("-m", "--mark", type=str, help="watermark content")
+    parse.add_argument(
+        "-m",
+        "--mark",
+        default="",
+        type=str,
+        help="watermark content",
+    )
     parse.add_argument(
         "-o",
         "--out",
@@ -187,7 +194,7 @@ def main():
     )
     parse.add_argument(
         "--opacity",
-        default=0.15,
+        default=0.3,
         type=float,
         help="opacity of watermarks, default is 0.15",
     )
@@ -265,4 +272,5 @@ def img_marker(
 
 
 if __name__ == "__main__":
-    img_marker("./data/color_2023-06-07_16_36_10.png")
+    # img_marker("./data/color_2023-06-07_16_36_10.png")
+    main()
