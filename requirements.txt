@@ -29,7 +29,7 @@ requests==2.28.1
 six==1.16.0
 toml==0.10.2
 tqdm==4.65.0
-urllib3==1.26.12
+urllib3==1.26.18
 virtualenv==20.16.5
 opencv-python==4.2.0.32
 garmin-fit-sdk==21.115.0
