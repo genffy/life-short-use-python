@@ -1,5 +1,5 @@
 autopep8==1.7.0
-certifi==2022.9.14
+certifi==2023.7.22
 cfgv==3.3.1
 charset-normalizer==2.1.1
 decorator==4.4.2
@@ -15,7 +15,7 @@ moviepy==1.0.3
 nodeenv==1.7.0
 numpy==1.24.2
 pandas==1.5.0
-Pillow==9.2.0
+Pillow==10.2.0
 platformdirs==2.5.2
 pre-commit==2.20.0
 proglog==0.1.10
@@ -29,7 +29,7 @@ requests==2.28.1
 six==1.16.0
 toml==0.10.2
 tqdm==4.65.0
-urllib3==1.26.12
+urllib3==1.26.18
 virtualenv==20.16.5
-opencv-python==1.24.2
+opencv-python==4.2.0.32
 garmin-fit-sdk==21.115.0
