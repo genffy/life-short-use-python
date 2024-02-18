@@ -1,10 +1,8 @@
 import requests
-from datetime import date, datetime
+from datetime import datetime
 import time
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import requests, zipfile, io
+import requests
 
 # blog https://blog.mathquant.com/2023/12/11/detailed-explanation-of-perpetual-contract-grid-strategy-parameter-optimization.html
 
@@ -20,7 +18,7 @@ def GetKlines(symbol="BTC", start="2020-8-10", end="2021-8-10", period="1h"):
     end_time = int(time.mktime(datetime.strptime(end, "%Y-%m-%d").timetuple())) * 1000
     while start_time < end_time:
         res = requests.get(
-            "https://fapi.binance.com/fapi/v1/klines?symbol=%sUSDT&interval=%s&startTime=%s&limit=1000"
+            "https://data-api.binance.vision/api/v3/klines?symbol=%sUSDT&interval=%s&startTime=%s&limit=1000"
             % (symbol, period, start_time)
         )
         res_list = res.json()
@@ -175,6 +173,12 @@ def Grid(fee=0.0002, value=100, pct=0.01, init=df.close[0]):
                 e.account["USDT"]["fee"],
             ]
         )
+    print(
+        "Final profit:",
+        e.account["USDT"]["total"] - e.initial_balance,
+        "Handling fee:",
+        e.account["USDT"]["fee"],
+    )
     res = pd.DataFrame(
         data=res_list, columns=["time", "price", "amount", "profit", "fee"]
     )
@@ -182,13 +186,12 @@ def Grid(fee=0.0002, value=100, pct=0.01, init=df.close[0]):
     return res
 
 
-for p in [0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05]:
-    res = Grid(fee=0.0002, value=value * p / 0.01, pct=p, init=3)
-    print(
-        p,
-        round(min(res["profit"]), 0),
-        round(res["profit"][-1], 0),
-        round(res["fee"][-1], 0),
-    )
-
-# 0.0005 -8378.0144.0237.00.001 -9323.01031.0465.00.002 -9306.03606.0738.00.005 -9267.09457.0781.00.01 -9228.013375.0550.00.02 -9183.015212.0309.00.05 -9037.016263.0131.0
+if __name__ == "__main__":
+    for p in [0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05]:
+        res = Grid(fee=0.0002, value=value * p / 0.01, pct=p, init=3)
+        print(
+            p,
+            round(min(res["profit"]), 0),
+            round(res["profit"][-1], 0),
+            round(res["fee"][-1], 0),
+        )
