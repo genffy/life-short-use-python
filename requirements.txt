@@ -31,5 +31,5 @@ toml==0.10.2
 tqdm==4.65.0
 urllib3==1.26.12
 virtualenv==20.16.5
-opencv-python==1.24.2
+opencv-python==4.2.0.32
 garmin-fit-sdk==21.115.0
