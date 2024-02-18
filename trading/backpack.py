@@ -1,5 +1,8 @@
-# https://docs.backpack.exchange/#section/Authentication/Signing-requests
+"""
+use [backpack-faskety-auto-trade](https://github.com/yuankongzhe/backpack-faskety-auto-trade) directly
+"""
 
+# https://docs.backpack.exchange/#section/Authentication/Signing-requests
 import requests
 import time
 import base64
@@ -7,6 +10,7 @@ from urllib.parse import urlencode
 import ed25519
 import json
 
+# AFF: https://backpack.exchange/refer/8c8d0654-10d0-44b9-8457-504507210695
 # https://backpack.exchange/settings/api-keys
 # Replace with your actual API key and secret
 api_key = "<API_KEY>"
