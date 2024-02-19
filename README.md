@@ -12,6 +12,9 @@ source ./venv/bin/activate
 ## dev
 ### install pkg
 ```shell
+conda create -n life-short-use-python
+conda activate life-short-use-python
+
 # single
 python -m pip install <pkg-name>
 # multi

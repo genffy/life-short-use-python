@@ -10,35 +10,35 @@ import json
 import threading
 
 
-def on_message(ws, message):
+def on_message(_, message):
     # 处理接收到的消息
     msg = json.loads(message)
     if msg["e"] == "kline":
         print(msg)
 
 
-def on_error(ws, error):
+def on_error(_, error):
     # 处理WebSocket错误
     print(error)
 
 
-def on_close(ws, a, b):
+def on_close(_, a, b):
     # 处理WebSocket关闭
     print("WebSocket closed")
 
 
-def on_open(ws):
+def on_open(ws_ins):
     # 处理WebSocket连接建立
     print("WebSocket opened")
     # 发送订阅消息
     subscribe_msg = {"method": "SUBSCRIBE", "params": ["btcusdt@kline_1m"], "id": 1}
-    ws.send(json.dumps(subscribe_msg))
+    ws_ins.send(json.dumps(subscribe_msg))
 
 
 if __name__ == "__main__":
-    # 创建WebSocket连接
-    # ws = websocket.WebSocketApp("wss://stream.binance.com:9443/ws",
-    # ref https://github.com/binance-us/binance-us-api-docs/blob/master/web-socket-streams.md#how-to-manage-a-local-order-book-correctly
+    # 创建WebSocket连接 ws = websocket.WebSocketApp("wss://stream.binance.com:9443/ws",
+    # ref https://github.com/binance-us/binance-us-api-docs/blob/master/web-socket-streams.md#how-to-manage-a-local
+    # -order-book-correctly
     ws = websocket.WebSocketApp(
         "wss://stream.binance.us:9443/ws/bnbbtc@depth",
         on_message=on_message,

@@ -10,7 +10,6 @@ import os.path
 from random import Random
 import Image
 from ExifTags import TAGS
-from xml.etree.ElementTree import tostring
 
 """
 @see: get randomString
@@ -18,14 +17,14 @@ from xml.etree.ElementTree import tostring
 """
 
 
-def random_str(randomlength=8):
-    str = ""
+def random_str(random_len=8):
+    stri = ""
     chars = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789"
     length = len(chars) - 1
     random = Random()
-    for i in range(randomlength):
-        str += chars[random.randint(0, length)]
-    return str
+    for i in range(random_len):
+        stri += chars[random.randint(0, length)]
+    return stri
 
 
 """

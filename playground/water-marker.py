@@ -12,15 +12,15 @@ import cv2 as cv
 import numpy as np
 
 
-def add_mark(imagePath, mark, args):
+def add_mark(image_path, mark, args):
     """
     添加水印，然后保存图片
     """
-    im = Image.open(imagePath)
+    im = Image.open(image_path)
     im = ImageOps.exif_transpose(im)
 
     image = mark(im)
-    name = os.path.basename(imagePath)
+    name = os.path.basename(image_path)
     if image:
         if not os.path.exists(args.out):
             os.mkdir(args.out)
@@ -39,7 +39,7 @@ def set_opacity(im, opacity):
     """
     设置水印透明度
     """
-    assert opacity >= 0 and opacity <= 1
+    assert 0 <= opacity <= 1
 
     alpha = im.split()[3]
     alpha = ImageEnhance.Brightness(alpha).enhance(opacity)
@@ -225,13 +225,13 @@ def main():
         add_mark(args.file, mark, args)
 
 
-# imgurl path to image file
+# img_url path to image file
 def img_marker(
-    imgurl,
+    img_url,
 ):
-    img = cv.imdecode(np.fromfile(imgurl, dtype=np.uint8), -1)
-    txturls = imgurl.rsplit(".", 1)
-    txturl = rf"{txturls[0]}.txt"
+    img = cv.imdecode(np.fromfile(img_url, dtype=np.uint8), -1)
+    txt_urls = img_url.rsplit(".", 1)
+    txt_url = "{txt_urls[0]}.txt"
 
     if img is None:
         sys.exit("Could not read the image.")
@@ -243,7 +243,7 @@ def img_marker(
         # 0 0.500781 0.611111 0.023438 0.027778
         # 0 0.534766 0.599306 0.024219 0.034722
         # 1 0.376172 0.729861 0.039844 0.079167
-        with open(txturl, "r") as f:
+        with open(txt_url, "r") as f:
             lines = f.readlines()
 
         # read annotation by line

@@ -1,5 +1,5 @@
 import json
-import gpxpy
+
 import gpxpy.gpx
 
 gpx = gpxpy.gpx.GPX()
@@ -28,12 +28,12 @@ gpx_track.segments.append(gpx_segment)
 #             {
 #                 "alt": 0.0,
 #                 "latitude": 31.30137183876083,
-#                 "longitute": 121.39867816570057
+#                 "longitude": 121.39867816570057
 #             }
 #         ]
 #     }
 # }
-with open("./data/DetailsRoutesWeb.json", "r") as f:
+with open("../data/DetailsRoutesWeb.json", "r") as f:
     data = json.load(f)["data"]
     tracks = data["tracks"]
     altList = data["altList"]
@@ -41,10 +41,10 @@ with open("./data/DetailsRoutesWeb.json", "r") as f:
         # get alt by index
         # "alt": 0.0,
         # "latitude": 31.30137183876083,
-        # "longitute": 121.39867816570057
+        # "longitude": 121.39867816570057
         gpx_segment.points.append(
-            gpxpy.gpx.GPXTrackPoint(track["latitude"], track["longitute"])
+            gpxpy.gpx.GPXTrackPoint(track["latitude"], track["longitude"])
         )
 # You can add routes and waypoints, too...
-with open("./data/routes.gpx", "w") as f:
+with open("../data/routes.gpx", "w") as f:
     f.write(gpx.to_xml())

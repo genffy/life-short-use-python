@@ -1,4 +1,8 @@
+# system
 .DS_Store
+
+# ide
+.idea
 
 # python
 __pycache__

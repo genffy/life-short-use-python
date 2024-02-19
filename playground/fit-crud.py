@@ -9,7 +9,7 @@ def show_ele_data(data):
 
 
 def parser_file(file_path):
-    stream = Stream.from_file(f"./data/" + file_path)
+    stream = Stream.from_file("./data/" + file_path)
     decoder = Decoder(stream)
     messages, errors = decoder.read()
 

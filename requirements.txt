@@ -33,3 +33,9 @@ urllib3==2.2.1
 virtualenv==20.16.5
 opencv-python==4.9.0.80
 garmin-fit-sdk==21.115.0
+
+ed25519~=1.5
+python-dotenv~=1.0.1
+torch~=2.1.0.dev20230413
+websocket~=0.2.1
+gpxpy~=1.6.2

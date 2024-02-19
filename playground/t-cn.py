@@ -1,6 +1,4 @@
 # coding=utf-8
-# python 3.6.5
-from copyreg import constructor
 import requests
 import pandas as pd
 import re
@@ -16,7 +14,8 @@ import pyperclip
 def sina_url(url):
     base_url = "https://service.weibo.com/share/share.php?url=" + url + "&title=" + url
     header = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/77.0.3865.120 Safari/537.36"
     }
     res = requests.get(base_url, header)
     # 匹配字符串scope.short_url = " http://t.cn/Ryh0P2j ";\

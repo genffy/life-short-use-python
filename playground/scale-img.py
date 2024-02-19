@@ -64,7 +64,7 @@ def compress_image_bs4(b64, mb=190, k=0.9):
 
 
 if __name__ == "__main__":
-    for img in os.listdir("./data/img/"):
+    for img in os.listdir("../data/img/"):
         # print(str(img))
         compress_image(outfile="./data/img/" + str(img))
     print("完")
