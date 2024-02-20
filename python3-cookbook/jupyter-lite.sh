@@ -16,5 +16,5 @@ python -m pip install -r requirements-jupyter-lite.txt
 
 # build the JupyterLite site
 jupyter lite --version
-jupyter lite build --contents python3-cookbook/ipynb --output-dir dist
+jupyter lite build --contents ipynb --output-dir dist
 # jupyter lite build --output-dir dist
