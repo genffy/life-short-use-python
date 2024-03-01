@@ -1,6 +1,5 @@
 # coding=utf-8
 import requests
-import pandas as pd
 import re
 import pyperclip
 
@@ -34,7 +33,7 @@ def copy(url_short):
 
 
 if __name__ == "__main__":
-    url_long = list(pd.read_clipboard())  # 读入剪切板数据
+    url_long = "https://xiyou4you.us/r/?s=22881327"
     print(url_long)
-    if ("http://" in url_long[0]) or ("https://" in url_long[0]):  # 读取
-        sina_url(url_long[0])
+    if ("http://" in url_long) or ("https://" in url_long):  # 读取
+        sina_url(url_long)
