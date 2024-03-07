@@ -1,6 +1,7 @@
 import hashlib
 import os
 import random
+import time
 import requests
 import json
 import uuid
@@ -17,12 +18,16 @@ grass_user_name = os.getenv("GRASS_USER_NAME")
 grass_user_pwd = os.getenv("GRASS_USER_PWD")
 ssl_context = ssl.create_default_context()
 ssl_context.load_verify_locations(certifi.where())
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+
+USER_ID = ""
+DEVICE_ID = ""
 
 
 # fake https://github.com/jackspirou/clientjs/blob/master/src/client.base.js#L166
 def generate_fingerprint():
     bar = "|"
-    user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    user_agent = USER_AGENT
     screen_print = "Current Resolution: 1440x900, Available Resolution: 1440x900, Color Depth: 24, Device XDPI: undefined, Device YDPI: undefined"
     plugins = "PDF Viewer, Chrome PDF Viewer, Chromium PDF Viewer, Microsoft Edge PDF Viewer, WebKit built-in PDF"
     fonts = "Arial Black, Arial, Bauhaus 93, Chalkduster, Comic Sans MS, Courier New, Georgia, GungSeo, Hiragino Sans GB, Impact, Menlo, Microsoft Sans Serif, Papyrus, Plantagenet Cherokee, Rockwell, Symbol, Tahoma, Times New Roman, Trebuchet MS, Verdana, Webdings, Wingdings"
@@ -45,6 +50,7 @@ def get_device():
     fingerprint = generate_fingerprint()
     NAMESPACE_DNS = "bed9e870-4e94-4260-a1fa-815514adfce1"
     device_id = uuid.uuid5(uuid.UUID(NAMESPACE_DNS), str(fingerprint))
+    DEVICE_ID = str(device_id)
     return device_id
 
 
@@ -60,6 +66,7 @@ def do_login():
     response = requests.request("POST", url, headers=headers, data=payload)
     token = response.cookies.get("token")
     body = response.text
+    USER_ID = json.loads(body)["data"]["id"]
     return token, body
 
 
@@ -86,6 +93,27 @@ WEBSOCKET_URLS = [
 def ws_handler():
     def on_message(ws, message):
         print(message)
+        parsed_message = json.loads(message)
+        result = {}
+        if parsed_message.action == "AUTH":
+            result = {
+                "browser_id": "",
+                "user_id": "",
+                "user_agent": USER_AGENT,
+                "timestamp": int(time.time() * 1000),
+                "device_type": "extension",
+                "version": "",
+            }
+
+        ws.send(
+            json.dumps(
+                {
+                    id: parsed_message.id,
+                    "origin_action": parsed_message.action,
+                    "result": result,
+                }
+            )
+        )
 
     def on_error(ws, error):
         print(error)
@@ -123,16 +151,29 @@ def ws_handler():
     )
     ws.send("Hello, World")
 
-    ws.run_forever(
-        dispatcher=rel, reconnect=5
-    )  # Set dispatcher to automatic reconnection, 5 second reconnect delay if connection closed unexpectedly
-    rel.signal(2, rel.abort)  # Keyboard Interrupt
-    rel.dispatch()
+    # ws.run_forever(
+    #     dispatcher=rel, reconnect=5
+    # )  # Set dispatcher to automatic reconnection, 5 second reconnect delay if connection closed unexpectedly
+    # rel.signal(2, rel.abort)  # Keyboard Interrupt
+    # rel.dispatch()
+    # websocket_check_interval
+    while True:
+        ws.send(
+            json.dumps(
+                {
+                    id: uuid.uuid4(),
+                    "version": "1.0.0",
+                    "action": "PING",
+                    "data": {},
+                }
+            )
+        )
+        time.sleep(20 * 1000)
 
 
-token, user = do_login()
-print(user)
-user_id = json.loads(user)["data"]["id"]
-device_id = get_device()
-device_info = get_device_info(token, device_id, user_id)
-print(device_info)
+# token, user = do_login()
+# print(user)
+# user_id = json.loads(user)["data"]["id"]
+# device_id = get_device()
+# device_info = get_device_info(token, device_id, user_id)
+# print(device_info)
