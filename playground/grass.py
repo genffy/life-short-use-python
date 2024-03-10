@@ -1,14 +1,4 @@
-import hashlib
-import os
-import random
-import time
-import requests
-import json
-import uuid
-import websocket
-import rel
-import ssl
-import certifi
+import hashlib, os, random, time, requests, json, uuid, websocket, rel, ssl, certifi
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,8 +6,11 @@ load_dotenv()
 # 读取环境变量
 grass_user_name = os.getenv("GRASS_USER_NAME")
 grass_user_pwd = os.getenv("GRASS_USER_PWD")
-ssl_context = ssl.create_default_context()
-ssl_context.load_verify_locations(certifi.where())
+
+# ssl._create_default_https_context = ssl._create_unverified_context
+SSL_CONTEXT = ssl.create_default_context()
+SSL_CONTEXT.load_verify_locations(certifi.where())
+
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
 
 USER_ID = ""
@@ -84,13 +77,12 @@ def get_device_info(token, device_id, user_id):
     return response.text
 
 
-WEBSOCKET_URLS = [
-    "wss://proxy.wynd.network:4650",
-    "wss://proxy.wynd.network:4444",
-]
-
-
 def ws_handler():
+    WEBSOCKET_URLS = [
+        "wss://proxy.wynd.network:4650",
+        "wss://proxy.wynd.network:4444",
+    ]
+
     def on_message(ws, message):
         print(message)
         parsed_message = json.loads(message)
@@ -122,48 +114,43 @@ def ws_handler():
         print("### closed ###")
 
     def on_open(ws):
-        print("Opened connection")
+        print("### Opened connection ###")
 
     websocket.enableTrace(True)
     websocketUrl = random.choice(WEBSOCKET_URLS)
     print(websocketUrl)
-    # ws = websocket.WebSocketApp(
-    #     websocketUrl,
-    #     on_open=on_open,
-    #     on_message=on_message,
-    #     on_error=on_error,
-    #     on_close=on_close,
-    # )
-
-    ws = websocket.WebSocket(
+    ws = websocket.WebSocketApp(
+        websocketUrl,
         on_open=on_open,
         on_message=on_message,
         on_error=on_error,
         on_close=on_close,
     )
-    print(ssl_context)
-    ws.connect(
-        websocketUrl,
-        http_proxy_host="127.0.0.1",
-        http_proxy_port="9999",
-        proxy_type="http",
-        # ssl=ssl_context,
+    ws.run_forever(
+        ping_interval=20 * 1000,
+        ping_timeout=10,
+        ping_payload=json.dumps(
+            {
+                "id": str(uuid.uuid4()),
+                "version": "1.0.0",
+                "action": "PING",
+                "data": {},
+            }
+        ),
+        sslopt={
+            # "cert_reqs": ssl.CERT_NONE,
+            "context": SSL_CONTEXT
+        },
     )
-    ws.send("Hello, World")
-
-    # ws.run_forever(
-    #     dispatcher=rel, reconnect=5
-    # )  # Set dispatcher to automatic reconnection, 5 second reconnect delay if connection closed unexpectedly
-    # rel.signal(2, rel.abort)  # Keyboard Interrupt
-    # rel.dispatch()
-    # websocket_check_interval
+    rel.signal(2, rel.abort)  # Keyboard Interrupt
+    rel.dispatch()
     while True:
         ws.send(
             json.dumps(
                 {
                     id: uuid.uuid4(),
                     "version": "1.0.0",
-                    "action": "PING",
+                    "action": "AUTH",
                     "data": {},
                 }
             )
@@ -177,3 +164,4 @@ def ws_handler():
 # device_id = get_device()
 # device_info = get_device_info(token, device_id, user_id)
 # print(device_info)
+ws_handler()
