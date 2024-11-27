@@ -32,3 +32,11 @@ python -m pip freeze > requirements.txt
 pre-commit install
 pre-commit run --all-files
 ```
+
+## note
+### twspace_dl
+
+```shell
+python3 -m pip install twspace-dl
+twspace_dl -i https://x.com/i/spaces/1mnGeAXAmYbGX/peek -c ./cookie.txt
+```
