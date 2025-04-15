@@ -39,3 +39,5 @@ python-dotenv~=1.0.1
 torch~=2.1.0.dev20230413
 websocket~=0.2.1
 gpxpy~=1.6.2
+
+tweepy==4.15.0
