@@ -2,16 +2,19 @@
 # -*- coding: utf-8 -*-
 """
 根据文件创建日期自动分类文件的工具
-支持按 YYYY/MM 格式将文件分类到目标目录
+
+支持按 YYYY/MM/DD 格式将文件分类到目标目录
+DD 文件夹支持备注，如 "25-周末旅行"
 """
 
 import os
+import re
 import sys
 import shutil
 import argparse
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import Optional, List, Dict
 import logging
 
 # 配置日志
@@ -42,7 +45,7 @@ def get_file_creation_time(file_path: Path) -> Optional[datetime]:
         if hasattr(stat_info, 'st_birthtime'):
             timestamp = stat_info.st_birthtime
         else:
-            # 其他系统使用 st_ctime（在某些系统上是创建时间，某些是修改时间）
+            # 其他系统使用 st_ctime
             timestamp = stat_info.st_ctime
         return datetime.fromtimestamp(timestamp)
     except (OSError, IOError) as e:
@@ -50,21 +53,38 @@ def get_file_creation_time(file_path: Path) -> Optional[datetime]:
         return None
 
 
-def get_target_path(root_dir: Path, file_date: datetime, filename: str) -> Path:
+def find_or_create_day_folder(month_dir: Path, day: int) -> Path:
     """
-    根据文件创建日期生成目标路径
+    在月份目录中查找或创建日期文件夹
+
+    支持的格式：
+    - DD（纯数字，如 "25"）
+    - DD-备注（如 "25-周末旅行"）
 
     Args:
-        root_dir: 目标根目录
-        file_date: 文件创建日期
-        filename: 文件名
+        month_dir: 月份目录路径
+        day: 日期（1-31）
 
     Returns:
-        完整的目标路径 (root_dir/YYYY/MM/filename)
+        日期文件夹路径
     """
-    year = file_date.strftime('%Y')
-    month = file_date.strftime('%m')
-    return root_dir / year / month / filename
+    day_str = f"{day:02d}"
+
+    # 先尝试查找已存在的匹配文件夹
+    if month_dir.exists():
+        for item in month_dir.iterdir():
+            if item.is_dir():
+                # 提取文件夹名中的日期部分
+                match = re.match(r'^(\d{1,2})', item.name)
+                if match:
+                    existing_day = int(match.group(1))
+                    if existing_day == day:
+                        logger.debug(f"找到已存在的日期文件夹: {item.name}")
+                        return item
+
+    # 没有找到，返回新文件夹路径
+    new_folder = month_dir / day_str
+    return new_folder
 
 
 def resolve_conflict(target_path: Path) -> Path:
@@ -95,7 +115,7 @@ def resolve_conflict(target_path: Path) -> Path:
         counter += 1
 
 
-def scan_directory(source_dir: Path, extensions: Optional[Tuple[str, ...]] = None) -> list[Path]:
+def scan_directory(source_dir: Path, extensions: Optional[tuple] = None) -> List[Path]:
     """
     扫描目录获取所有文件
 
@@ -130,19 +150,19 @@ def scan_directory(source_dir: Path, extensions: Optional[Tuple[str, ...]] = Non
 def classify_files(
     source_dir: Path,
     target_dir: Path,
-    extensions: Optional[Tuple[str, ...]] = None,
+    extensions: Optional[tuple] = None,
     dry_run: bool = False,
     copy: bool = False,
     skip_existing: bool = False
-) -> dict:
+) -> Dict:
     """
-    分类文件到目标目录
+    分类文件到目标目录（按 YYYY/MM/DD 结构）
 
     Args:
         source_dir: 源目录
         target_dir: 目标目录
         extensions: 文件扩展名过滤
-        dry_run: 预览模式，不实际移动文件
+        dry_run: 预览模式，不实际移动/复制文件
         copy: 复制而非移动文件
         skip_existing: 跳过已存在的文件
 
@@ -157,6 +177,7 @@ def classify_files(
         'processed': 0,
         'skipped': 0,
         'failed': 0,
+        'folders_created': 0,
         'errors': []
     }
 
@@ -167,8 +188,22 @@ def classify_files(
             stats['skipped'] += 1
             continue
 
-        # 生成目标路径
-        target_path = get_target_path(target_dir, creation_time, file_path.name)
+        # 生成年月目录路径
+        year = creation_time.strftime('%Y')
+        month = creation_time.strftime('%m')
+        month_dir = target_dir / year / month
+
+        # 查找或创建日期文件夹
+        day_folder = find_or_create_day_folder(month_dir, creation_time.day)
+
+        # 目标路径
+        target_path = day_folder / file_path.name
+
+        # 检查是否是同一个位置
+        if file_path == target_path:
+            logger.debug(f"文件已在正确位置: {file_path}")
+            stats['skipped'] += 1
+            continue
 
         # 检查目标文件是否已存在
         if target_path.exists():
@@ -179,10 +214,12 @@ def classify_files(
             else:
                 target_path = resolve_conflict(target_path)
 
-        # 创建目标目录
-        target_parent = target_path.parent
+        # 创建目录
         if not dry_run:
-            target_parent.mkdir(parents=True, exist_ok=True)
+            # 创建日期文件夹（如果不存在）
+            if not day_folder.exists():
+                day_folder.mkdir(parents=True, exist_ok=True)
+                stats['folders_created'] += 1
 
         # 执行操作
         action = "复制" if copy else "移动"
@@ -203,6 +240,9 @@ def classify_files(
                 stats['errors'].append(str(file_path))
         else:
             stats['processed'] += 1
+            # 预览模式下也统计需要创建的文件夹
+            if not day_folder.exists():
+                stats['folders_created'] += 1
 
     return stats
 
@@ -213,28 +253,27 @@ def parse_arguments() -> argparse.Namespace:
 
     支持的格式：
     1. 位置参数：python classify_image.py <source_dir> <target_dir>
-    2. 配置文件：python classify_image.py --config config.json
-    3. 完整参数：python classify_image.py --source /path/to/source --target /path/to/target ...
+    2. 完整参数：python classify_image.py --source /path/to/source --target /path/to/target ...
     """
     parser = argparse.ArgumentParser(
-        description='根据文件创建日期自动分类文件',
+        description='根据文件创建日期自动分类文件（YYYY/MM/DD 结构）',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
   # 预览模式（推荐先运行）
-  python classify_image.py /Volumes/SD Card/DCIM ~/Pictures/Sorted --dry-run
+  python classify_image.py /Volumes/SD\ Card/DCIM ~/Pictures/Photos --dry-run
 
   # 移动文件
-  python classify_image.py ~/Downloads/Photos ~/Pictures/Sorted
+  python classify_image.py ~/Downloads/Photos ~/Pictures/Photos
 
   # 只处理图片文件
-  python classify_image.py ~/Downloads/Photos ~/Pictures/Sorted --extensions .jpg .png .heic
+  python classify_image.py ~/Downloads/Photos ~/Pictures/Photos --extensions .jpg .png .heic
 
   # 复制而非移动
-  python classify_image.py ~/Downloads/Photos ~/Pictures/Sorted --copy
+  python classify_image.py ~/Downloads/Photos ~/Pictures/Photos --copy
 
   # 跳过已存在的文件
-  python classify_image.py ~/Downloads/Photos ~/Pictures/Sorted --skip-existing
+  python classify_image.py ~/Downloads/Photos ~/Pictures/Photos --skip-existing
         """
     )
 
@@ -331,7 +370,7 @@ def main():
 
     # 显示配置
     logger.info("=" * 50)
-    logger.info("文件分类工具")
+    logger.info("文件分类工具 (YYYY/MM/DD)")
     logger.info("=" * 50)
     logger.info(f"源目录: {source_dir}")
     logger.info(f"目标目录: {target_dir}")
@@ -366,6 +405,7 @@ def main():
     logger.info(f"已处理: {stats['processed']}")
     logger.info(f"已跳过: {stats['skipped']}")
     logger.info(f"失败: {stats['failed']}")
+    logger.info(f"创建的文件夹: {stats['folders_created']}")
 
     if stats['errors']:
         logger.warning("失败的文件:")
@@ -375,7 +415,7 @@ def main():
     logger.info("=" * 50)
 
     if args.dry_run:
-        logger.info("预览模式完成，使用 --dry-run=false 实际执行")
+        logger.info("预览模式完成，去掉 --dry-run 参数实际执行")
 
 
 if __name__ == '__main__':
